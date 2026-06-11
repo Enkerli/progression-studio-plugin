@@ -1,6 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
 #include "../enkerli-juce/src/EnkerliWebView.h"
+#include "../enkerli-juce/src/RuntimeInfo.h"
 #include "BinaryDataWebUI.h"
 
 class ProgressionStudioEditor : public juce::AudioProcessorEditor,
@@ -69,11 +70,15 @@ private:
         obj->setProperty ("bpm", proc.transport.getBpm());
         obj->setProperty ("playing", proc.transport.isPlaying());
         web.emit ("transport", juce::var (obj));
+
+        if (++runtimeTick % 8 == 0) // every ~2 s at 4 Hz
+            web.emit ("runtime", enkerli::RuntimeInfo::snapshot (proc));
     }
 
     ProgressionStudioProcessor& proc;
     enkerli::BridgedWebView web;
     bool pageReady = false;
+    int runtimeTick = 0;
 };
 
 inline juce::AudioProcessorEditor* ProgressionStudioProcessor::createEditor()
