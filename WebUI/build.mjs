@@ -18,10 +18,12 @@ for (const name of readdirSync(assets)) {
   if (name.endsWith(".js")) {
     // Guard inline scripts against premature termination. Classic script
     // (IIFE build) — inline ES modules don't run under JUCE's custom
-    // scheme in WKWebView.
+    // scheme in WKWebView. Unlike module scripts, classic inline scripts
+    // are NOT deferred, so the script must live at the END of <body> or
+    // it runs before #root exists (React error #299, found on-device).
     const safe = content.replaceAll("</script", "<\\/script");
-    html = html.replace(new RegExp(`<script[^>]*src="\\./assets/${name}"[^>]*></script>`),
-      () => `<script>${safe}</script>`);
+    html = html.replace(new RegExp(`<script[^>]*src="\\./assets/${name}"[^>]*></script>`), "");
+    html = html.replace("</body>", () => `<script>${safe}</script></body>`);
   } else if (name.endsWith(".css")) {
     html = html.replace(new RegExp(`<link[^>]*href="\\./assets/${name}"[^>]*>`),
       () => `<style>${content}</style>`);
