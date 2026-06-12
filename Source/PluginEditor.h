@@ -24,7 +24,7 @@ public:
         web.start();
         setSize (900, 700);
         setResizable (true, true);
-        startTimerHz (4);
+        startTimerHz (10); // chord-follow wants snappier than the old 4 Hz
     }
 
     void resized() override { web.setBounds (getLocalBounds()); }
@@ -69,9 +69,10 @@ private:
         auto* obj = new juce::DynamicObject();
         obj->setProperty ("bpm", proc.transport.getBpm());
         obj->setProperty ("playing", proc.transport.isPlaying());
+        obj->setProperty ("beat", proc.scheduler.getClipBeat()); // chord-follow
         web.emit ("transport", juce::var (obj));
 
-        if (++runtimeTick % 8 == 0) // every ~2 s at 4 Hz
+        if (++runtimeTick % 20 == 0) // every ~2 s at 10 Hz
             web.emit ("runtime", enkerli::RuntimeInfo::snapshot (proc));
     }
 
