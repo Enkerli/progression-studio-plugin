@@ -1,6 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
 #include "../enkerli-juce/src/EnkerliWebView.h"
+#include "../enkerli-juce/src/FileExport.h"
 #include "../enkerli-juce/src/RuntimeInfo.h"
 #include "BinaryDataWebUI.h"
 
@@ -18,6 +19,7 @@ public:
                   { "enkerliSetClip", [this] (const juce::var& v) { applyClip (v); } },
                   { "enkerliClearClip", [this] (const juce::var&) { proc.scheduler.clear(); } },
                   { "enkerliState", [this] (const juce::var& v) { proc.storeUiState (juce::JSON::toString (v)); } },
+                  { "enkerliSaveFile", [this] (const juce::var& v) { saveFile (v); } },
               })
     {
         addAndMakeVisible (web);
@@ -38,6 +40,18 @@ private:
         const auto state = juce::JSON::parse (json);
         if (! state.isVoid())
             web.emit ("state", state);
+    }
+
+    // WKWebView can't download (TESTING.md: "Frame load interrupted") —
+    // the UI sends bytes over the bridge and we save them natively.
+    void saveFile (const juce::var& v)
+    {
+        const auto name = v.getProperty ("name", "export.bin").toString()
+                              .replaceCharacters ("/\\:", "---");
+        juce::MemoryOutputStream decoded;
+        if (! juce::Base64::convertFromBase64 (decoded, v.getProperty ("b64", "").toString()))
+            return;
+        enkerli::exportBytes (*this, name, decoded.getMemoryBlock());
     }
 
     void applyClip (const juce::var& v)

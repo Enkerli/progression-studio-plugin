@@ -14,6 +14,10 @@ enkerli_add_midi_effect_plugin(ProgressionStudio
 )
 
 target_sources(ProgressionStudio PRIVATE Source/Plugin.cpp)
+if(APPLE)
+    # iOS share-sheet save path (ObjC++; compiles empty on macOS).
+    target_sources(ProgressionStudio PRIVATE enkerli-juce/src/FileExport.mm)
+endif()
 
 # The web UI: a single-file bundle generated from the music-suite monorepo
 # app (apps/progression-studio) by WebUI/build.mjs. The generated file is
