@@ -11,6 +11,7 @@ enkerli_add_midi_effect_plugin(ProgressionStudio
     PRODUCT_NAME "Progression Studio"
     PLUGIN_CODE  Prst
     DESCRIPTION  "Corpus-driven jazz progression generator: 2,611 lead sheets, ear-driven curation, host-synced MIDI"
+    ICON_BIG     "${CMAKE_SOURCE_DIR}/Assets/icon_1024.png"
 )
 
 target_sources(ProgressionStudio PRIVATE Source/Plugin.cpp)
