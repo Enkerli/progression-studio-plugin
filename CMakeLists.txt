@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(ProgressionStudio VERSION 0.1.0)
+project(ProgressionStudio VERSION 0.1.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
@@ -10,6 +10,7 @@ enkerli_resolve_juce()
 enkerli_add_midi_effect_plugin(ProgressionStudio
     PRODUCT_NAME "Progression Studio"
     PLUGIN_CODE  Prst
+    VERSION      "${PROJECT_VERSION}"
     DESCRIPTION  "Corpus-driven jazz progression generator: 2,611 lead sheets, ear-driven curation, host-synced MIDI"
     ICON_BIG     "${CMAKE_SOURCE_DIR}/Assets/icon_1024.png"
 )
