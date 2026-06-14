@@ -88,12 +88,31 @@ private:
 
         if (++runtimeTick % 20 == 0) // every ~2 s at 10 Hz
             web.emit ("runtime", enkerli::RuntimeInfo::snapshot (proc));
+
+        // Forward any incoming MIDI note events (chord input) as a batch.
+        proc.midiIn.drain (midiInBuf);
+        if (! midiInBuf.empty())
+        {
+            juce::Array<juce::var> arr;
+            for (const auto& e : midiInBuf)
+            {
+                auto* n = new juce::DynamicObject();
+                n->setProperty ("note", e.note);
+                n->setProperty ("velocity", e.velocity);
+                n->setProperty ("on", e.isOn);
+                arr.add (juce::var (n));
+            }
+            auto* obj = new juce::DynamicObject();
+            obj->setProperty ("notes", arr);
+            web.emit ("midiNotes", juce::var (obj));
+        }
     }
 
     ProgressionStudioProcessor& proc;
     enkerli::BridgedWebView web;
     bool pageReady = false;
     int runtimeTick = 0;
+    std::vector<enkerli::MidiNoteEvent> midiInBuf;
 };
 
 inline juce::AudioProcessorEditor* ProgressionStudioProcessor::createEditor()

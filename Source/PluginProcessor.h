@@ -2,6 +2,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "../enkerli-juce/src/MidiClipScheduler.h"
 #include "../enkerli-juce/src/TransportSnapshot.h"
+#include "../enkerli-juce/src/MidiInputCollector.h"
 
 // Progression Studio plugin — the corpus-driven generator as an aumi MIDI
 // processor. The WebView UI (the same web bundle as the browser app, in
@@ -23,6 +24,9 @@ public:
         audio.clear();
         if (audio.getNumSamples() > 0)
             lastBlockSize = audio.getNumSamples();
+        // Capture host MIDI in (chord input) BEFORE the scheduler adds its
+        // own notes — incoming played notes only; they still pass through.
+        midiIn.collect (midi);
         transport.capture (getPlayHead());
         scheduler.process (getPlayHead(), sampleRate, lastBlockSize, midi);
     }
@@ -31,6 +35,7 @@ public:
     {
         if (audio.getNumSamples() > 0)
             lastBlockSize = audio.getNumSamples();
+        midiIn.collect (midi);
         transport.capture (getPlayHead());
         scheduler.process (getPlayHead(), sampleRate, lastBlockSize, midi);
     }
@@ -79,6 +84,7 @@ public:
 
     enkerli::MidiClipScheduler scheduler;
     enkerli::TransportSnapshot transport;
+    enkerli::MidiInputCollector midiIn;
 
 private:
     double sampleRate = 44100.0;
