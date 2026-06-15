@@ -2,6 +2,7 @@
 #include "PluginProcessor.h"
 #include "../enkerli-juce/src/EnkerliWebView.h"
 #include "../enkerli-juce/src/FileExport.h"
+#include "../enkerli-juce/src/FileImport.h"
 #include "../enkerli-juce/src/RuntimeInfo.h"
 #include "BinaryDataWebUI.h"
 
@@ -20,6 +21,7 @@ public:
                   { "enkerliClearClip", [this] (const juce::var&) { proc.scheduler.clear(); } },
                   { "enkerliState", [this] (const juce::var& v) { proc.storeUiState (juce::JSON::toString (v)); } },
                   { "enkerliSaveFile", [this] (const juce::var& v) { saveFile (v); } },
+                  { "enkerliOpenFile", [this] (const juce::var& v) { openFile (v); } },
               })
     {
         addAndMakeVisible (web);
@@ -52,6 +54,21 @@ private:
         if (! juce::Base64::convertFromBase64 (decoded, v.getProperty ("b64", "").toString()))
             return;
         enkerli::exportBytes (*this, name, decoded.getMemoryBlock());
+    }
+
+    // Native open (FileChooser / document picker); the file's bytes come back
+    // to the UI as base64 via the "fileOpened" event.
+    void openFile (const juce::var& v)
+    {
+        const auto patterns = v.getProperty ("patterns", "*").toString();
+        enkerli::importFile (*this, patterns,
+            [this] (const juce::String& fileName, const juce::MemoryBlock& bytes)
+            {
+                auto* obj = new juce::DynamicObject();
+                obj->setProperty ("name", fileName);
+                obj->setProperty ("b64", juce::Base64::toBase64 (bytes.getData(), bytes.getSize()));
+                web.emit ("fileOpened", juce::var (obj));
+            });
     }
 
     void applyClip (const juce::var& v)
