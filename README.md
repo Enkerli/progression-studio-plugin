@@ -28,3 +28,10 @@ monorepo app by `node WebUI/build.mjs` — regenerate after app changes.
 
 CC0-1.0 (transition statistics derived from Impro-Visor's imaginary-book
 corpus, GPL — counts of chord changes only, attributed).
+
+## Suite handoff
+
+This repo is part of the Enkerli music suite. For the whole-suite picture —
+repo map, conventions (leftmost-LSB bit order, structural spelling),
+build/validation ladders, and open queues — start at the suite handoff:
+<https://github.com/Enkerli/music-suite/blob/main/HANDOFF.md>.
