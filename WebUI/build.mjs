@@ -88,6 +88,33 @@ window.addEventListener("unhandledrejection", function (e) {
 html = html.replace("<head>", "<head>" + prelude);
 
 
+// Build tag + badge, so this bundle says when it was produced. The binary
+// publishes its own stamp before the page loads (BridgedWebView's user script),
+// and the two together are what make a mismatch visible: a bundle newer than the
+// binary means it was rebuilt but never embedded and relinked, which is how a
+// two-day-old Serpe UI shipped on 2026-07-29 with nothing on screen to say so.
+const stamp = new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC";
+html = html.replace("<head>", "<head>" + `<script>
+window.__BUILD_TAG__ = ${JSON.stringify(stamp)};
+(() => { const show = () => {
+  if (!document.body || document.getElementById('es-build-tag')) return;
+  const ui = window.__BUILD_TAG__, bin = window.__CPP_BUILD_TAG__;
+  const stale = bin && bin !== 'unknown' && ui.slice(0,16) > bin.slice(0,16);
+  const el = document.createElement('div'); el.id = 'es-build-tag';
+  el.textContent = bin ? ('UI ' + ui + '  \u00b7  bin ' + bin + (stale ? '  \u26a0' : ''))
+                       : ('UI ' + ui + '  \u00b7  bin \u2014');
+  el.title = bin ? ('WebUI bundle built ' + ui + '\nBinary produced ' + bin
+      + (stale ? '\n\nWARNING: the bundle is newer than the binary running it — rebuild and reinstall.' : ''))
+    : ('WebUI bundle built ' + ui + ' \u2014 no native stamp (webapp, or an older plugin build)');
+  el.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:2147483000;'
+    + 'font:10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;'
+    + 'color:var(--es-fg-muted,#8a8a8a);opacity:.55;pointer-events:none;'
+    + 'user-select:none;font-variant-numeric:tabular-nums;';
+  document.body.appendChild(el); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+  else show(); })();
+<\/script>`);
+
 writeFileSync(join(process.cwd(), "WebUI/index.html"), html);
 console.log("wrote WebUI/index.html", (html.length / 1024).toFixed(0) + " KB");
 
