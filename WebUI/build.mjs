@@ -16,7 +16,28 @@ import { readFileSync, readdirSync, writeFileSync, mkdtempSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
-const appDir = resolve(process.argv[2] ?? join(process.env.HOME, "Desktop/music-suite/apps/progression-studio"));
+// Where the monorepo app lives. The default used to be
+// $HOME/Desktop/music-suite, which stopped existing when the checkouts were
+// centralised under ~/Documents/Coding — so `node WebUI/build.mjs` silently
+// pointed at nothing, and "regenerate after app changes" quietly did not
+// (found 2026-07-30). Probe the same layouts the CMake side documents:
+// an explicit argument, $MUSIC_SUITE, a sibling checkout, or this repo nested
+// inside the monorepo. Fail loudly rather than build the wrong tree.
+const appDir = (() => {
+  const candidates = [
+    process.argv[2],
+    process.env.MUSIC_SUITE && join(process.env.MUSIC_SUITE, "apps/progression-studio"),
+    resolve(import.meta.dirname, "../../music-suite/apps/progression-studio"),  // sibling
+    resolve(import.meta.dirname, "../../../apps/progression-studio"),           // nested
+  ].filter(Boolean).map((p) => resolve(p));
+  const found = candidates.find((p) => existsSync(join(p, "package.json")));
+  if (!found) {
+    console.error("build.mjs: cannot find the progression-studio app. Tried:\n  " + candidates.join("\n  ")
+      + "\nPass the path explicitly, or set MUSIC_SUITE.");
+    process.exit(1);
+  }
+  return found;
+})();
 const monorepoModules = resolve(appDir, "../../node_modules");
 console.log("building", appDir);
 execSync(`npx vite build${process.env.PSP_DEBUG ? " --minify false" : ""}`, { cwd: appDir, stdio: "inherit" });
