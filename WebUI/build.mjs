@@ -12,7 +12,7 @@
 //  * Never ship to a device untested: a happy-dom smoke render gates
 //    this build (root must populate, zero errors).
 import { execSync } from "node:child_process";
-import { readFileSync, readdirSync, writeFileSync, mkdtempSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync, mkdtempSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 

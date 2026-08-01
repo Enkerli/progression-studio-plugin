@@ -1,6 +1,28 @@
 <!doctype html>
 <html lang="en">
   <head><script>
+window.__BUILD_TAG__ = "2026-08-01 17:30 UTC";
+(() => { const show = () => {
+  if (!document.body || document.getElementById('es-build-tag')) return;
+  const ui = window.__BUILD_TAG__, bin = window.__CPP_BUILD_TAG__;
+  const stale = bin && bin !== 'unknown' && ui.slice(0,16) > bin.slice(0,16);
+  const el = document.createElement('div'); el.id = 'es-build-tag';
+  el.textContent = bin ? ('UI ' + ui + '  ·  bin ' + bin + (stale ? '  ⚠' : ''))
+                       : ('UI ' + ui + '  ·  bin —');
+  el.title = bin ? ('WebUI bundle built ' + ui + '
+Binary produced ' + bin
+      + (stale ? '
+
+WARNING: the bundle is newer than the binary running it — rebuild and reinstall.' : ''))
+    : ('WebUI bundle built ' + ui + ' — no native stamp (webapp, or an older plugin build)');
+  el.style.cssText = 'position:fixed;right:6px;bottom:4px;z-index:2147483000;'
+    + 'font:10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;'
+    + 'color:var(--es-fg-muted,#8a8a8a);opacity:.55;pointer-events:none;'
+    + 'user-select:none;font-variant-numeric:tabular-nums;';
+  document.body.appendChild(el); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+  else show(); })();
+</script><script>
 window.addEventListener("error", function (e) {
   var d = document.createElement("pre");
   d.style.cssText = "position:fixed;inset:8px;z-index:99999;background:#300;color:#fcc;padding:12px;overflow:auto;font:12px monospace;white-space:pre-wrap";
